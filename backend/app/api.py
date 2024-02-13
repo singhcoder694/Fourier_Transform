@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import StreamingResponse
 import numpy as np
 from pydantic import BaseModel
 import matplotlib.pyplot as plt
@@ -10,7 +11,7 @@ import base64
 app = FastAPI()
 
 origins = [
-    "http://localhost:3000"
+    "http://localhost:5173"
 ]
 class graph_input(BaseModel):
     text: str
@@ -38,13 +39,10 @@ async def generate_plot(inp:graph_input):
     plt.ylabel('Y-axis')
     plt.title('Sample Plot')
 
-  
     img = io.BytesIO()
     plt.savefig(img, format='png')
     img.seek(0)
-    plot_base64 = base64.b64encode(img.getvalue()).decode()
 
-   
     plt.close()
 
-    return plot_base64
+    return StreamingResponse(io.BytesIO(img.getvalue()), media_type="image/png")
